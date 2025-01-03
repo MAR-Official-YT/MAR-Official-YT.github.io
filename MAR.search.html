@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Opossum Search</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+#header {
+  background-color: #f2f2f2;
+  padding: 20px;
+  text-align: center;
+}
+
+#logo {
+  width: 292px; /* Match image width */
+  height: auto;
+}
+
+#searchbox {
+  width: 600px;
+  margin: 20px auto;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+#footer {
+  background-color: #f2f2f2;
+  padding: 10px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+</style>
+</head>
+<body>
+
+<div id="header">
+  <img id="logo" src="https://media.discordapp.net/attachments/1260934748998729809/1324648479741706260/IMG_20250103_135950.jpg?ex=6778ea88&is=67779908&hm=5757bb344f05bfd1e17b62cadf05772735ed90fd7c1e60fdc787a2ca950f77b2&" alt="Opossum Logo">
+</div>
+
+<div>
+  <form action="https://www.google.com/search" method="get">
+    <input type="text" name="q" id="searchbox" placeholder="Enter your search query">
+    <input type="submit" value="Search with Opossum" style="padding: 10px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+  </form>
+</div>
+
+<script>
+  document.querySelector('form').addEventListener('submit', function(event) {
+    let query = document.getElementById('searchbox').value;
+    query = query.trim(); //remove leading/trailing spaces
+    if(query.length > 0){
+      //Add opossum to the query
+      document.querySelector('input[name="q"]').value = query;
+    }
+
+  });
+</script>
+
+<div id="footer">
+  Powered by opossum search & Google, Created by Mahad
+</div>
+
+</body>
+</html>
