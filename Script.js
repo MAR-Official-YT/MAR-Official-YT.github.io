@@ -1,92 +1,123 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+// Constants
+const WIDTH = 800;
+const HEIGHT = 600;
+const BLOCK_SIZE = 32;
+const GRID_WIDTH = WIDTH / BLOCK_SIZE;
+const GRID_HEIGHT = HEIGHT / BLOCK_SIZE;
 
-const TILE_SIZE = 30;
-const MAP_WIDTH = 20;
-const MAP_HEIGHT = 15;
+// Colors
+const WHITE = "white";
+const BLACK = "black";
+const BROWN = "brown";
+const GRAY = "gray";
+const BLUE = "blue";
 
-canvas.width = MAP_WIDTH * TILE_SIZE;
-canvas.height = MAP_HEIGHT * TILE_SIZE;
+// Block Types
+const AIR = 0;
+const DIRT = 1;
+const STONE = 2;
+const DIAMOND = 3;
 
-
-// Initialize Game Map (Example: ground and few tree and player)
-let map = [];
-for (let y = 0; y < MAP_HEIGHT; y++) {
-   map[y] = [];
-   for (let x = 0; x < MAP_WIDTH; x++) {
-       map[y][x] = 1; // 1 for ground
-   }
-}
-// adding some tree
-map[10][5] = 2;
-map[10][6] = 2;
-map[9][5] = 2;
-map[9][6] = 2;
-map[8][5] = 2;
-map[8][6] = 2;
-
-// adding player at center
-let playerX = Math.floor(MAP_WIDTH/2);
-let playerY = Math.floor(MAP_HEIGHT/2);
+// Get Canvas and Context
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
 
+function createWorld() {
+    let world = Array(GRID_HEIGHT).fill(null).map(() => Array(GRID_WIDTH).fill(DIRT));
 
-// Tile Dictionary
-const tiles = {
-    0: { color: 'white'},
-    1: { color: 'green' },     // Ground
-    2: { color: 'brown' },     // Tree
-    3: { color: 'blue'},      // Player
-    // Add more tiles as needed
-};
-
-
-function drawMap() {
-    for (let y = 0; y < MAP_HEIGHT; y++) {
-        for (let x = 0; x < MAP_WIDTH; x++) {
-            const tileType = map[y][x];
-            const tile = tiles[tileType] || tiles[0];
-            ctx.fillStyle = tile.color;
-            ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-
+    // Randomly scatter Stone
+    for (let y = 0; y < GRID_HEIGHT; y++) {
+        for (let x = 0; x < GRID_WIDTH; x++) {
+            if (Math.random() < 0.3) {
+                world[y][x] = STONE;
+            }
         }
     }
 
-    //draw the player
 
-    ctx.fillStyle = tiles[3].color;
-     ctx.fillRect(playerX * TILE_SIZE, playerY * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+    // Add a Diamond
+    while (true) {
+        const x = Math.floor(Math.random() * GRID_WIDTH);
+        const y = Math.floor(Math.random() * GRID_HEIGHT);
+        if (world[y][x] == DIRT || world[y][x] == STONE) {
+            world[y][x] = DIAMOND;
+            break;
+        }
+    }
+
+    return world;
+}
+
+function drawWorld(world) {
+  for(let y = 0; y < GRID_HEIGHT; y++){
+    for(let x = 0; x < GRID_WIDTH; x++){
+        const block = world[y][x];
+        ctx.beginPath();
+        ctx.rect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+        if (block == DIRT) {
+            ctx.fillStyle = BROWN;
+        } else if (block == STONE) {
+            ctx.fillStyle = GRAY;
+        } else if (block == DIAMOND) {
+            ctx.fillStyle = BLUE;
+        }
+        ctx.fill();
+    }
+  }
+}
+
+function drawPlayer(playerX, playerY) {
+    ctx.fillStyle = WHITE;
+    ctx.fillRect(playerX * BLOCK_SIZE, playerY * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
 }
 
 
+// Initial game variables
+let world = createWorld();
+let playerX = 0;
+let playerY = 0;
+let playerInventory = [];
+let gameOver = false;
 
- // Create Control Buttons
- const controlsDiv = document.getElementById('controls');
- const directions = ['up', 'down', 'left', 'right'];
 
- directions.forEach(dir => {
-     const button = document.createElement('div');
-     button.classList.add('control-button');
-     button.textContent = dir;
-     button.addEventListener('click', () => movePlayer(dir));
-     controlsDiv.appendChild(button);
- });
+// Game Loop
+function gameLoop() {
+  if(gameOver) return;
 
-function movePlayer(direction){
-     switch(direction){
-     case 'up':
-         if (playerY > 0) playerY--;
-         break;
-     case 'down':
-             if (playerY < MAP_HEIGHT - 1) playerY++;
-             break;
-      case 'left':
-              if (playerX > 0) playerX--;
-             break;
-      case 'right':
-              if (playerX < MAP_WIDTH -1) playerX++;
-             break;
-     }
-    drawMap();
+  ctx.fillStyle = BLACK; //background
+  ctx.fillRect(0,0,WIDTH,HEIGHT)
+
+  drawWorld(world);
+  drawPlayer(playerX, playerY);
+  requestAnimationFrame(gameLoop);
 }
- drawMap(); // initial draw
+
+// Input Handling
+document.addEventListener("keydown", (event) => {
+    if (gameOver) return;
+    if (event.key === "ArrowLeft" && playerX > 0) {
+        playerX -= 1;
+    } else if (event.key === "ArrowRight" && playerX < GRID_WIDTH - 1) {
+        playerX += 1;
+    } else if (event.key === "ArrowUp" && playerY > 0) {
+        playerY -= 1;
+    } else if (event.key === "ArrowDown" && playerY < GRID_HEIGHT - 1) {
+        playerY += 1;
+    } else if (event.key === " ") {
+       const mineX = playerX;
+       const mineY = playerY;
+       const blockMined = world[mineY][mineX];
+       if (blockMined === DIAMOND) {
+           playerInventory.push("diamond");
+           world[mineY][mineX] = AIR;
+           gameOver = true; // Win game
+           console.log("You mined a diamond! You win!");
+
+       } else if (blockMined !== AIR) {
+           world[mineY][mineX] = AIR;
+       }
+    }
+});
+
+gameLoop(); // Start the game loop
