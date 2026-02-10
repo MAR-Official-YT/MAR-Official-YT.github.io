@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine Letter for Aayan Bhaiya</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Press Start 2P', cursive;
+            user-select: none;
+            -webkit-user-select: none;
+            background-color: #ffebf0;
+            overflow: hidden;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .bg-pattern {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(#ffc2d1 2px, transparent 2px);
+            background-size: 32px 32px;
+            opacity: 0.6;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(5deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-5deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        @keyframes pulse-heart {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-shake { animation: shake 0.5s ease-in-out infinite; }
+        .animate-heart-pulse { animation: pulse-heart 1.5s ease-in-out infinite; }
+
+        .pixel-border {
+            box-shadow: 
+                -4px 0 0 0 #4a4a4a,
+                4px 0 0 0 #4a4a4a,
+                0 -4px 0 0 #4a4a4a,
+                0 4px 0 0 #4a4a4a;
+            margin: 4px; 
+        }
+
+        .pixel-border-sm {
+            box-shadow: 
+                -2px 0 0 0 #4a4a4a,
+                2px 0 0 0 #4a4a4a,
+                0 -2px 0 0 #4a4a4a,
+                0 2px 0 0 #4a4a4a;
+        }
+
+        .hidden-stage {
+            display: none !important;
+        }
+
+        #no-button {
+            transition: none;
+            white-space: nowrap;
+        }
+
+        .letter-content {
+            border: 4px solid #ffc2d1;
+            background-color: white;
+            padding: 1.5rem;
+            min-height: 340px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-pattern"></div>
+
+    <!-- STAGE 1: ENVELOPE -->
+    <div id="envelope-stage" class="relative z-10 flex flex-col items-center cursor-pointer group">
+        <div class="relative animate-float transition-transform group-hover:scale-105 duration-300">
+            <div class="w-72 h-48 bg-[#ff5e78] relative pixel-border flex items-center justify-center shadow-lg">
+                <div class="absolute top-0 left-0 w-full h-0 z-20" style="border-left: 144px solid transparent; border-right: 144px solid transparent; border-top: 100px solid #ff8fa3; filter: drop-shadow(0 4px 0 rgba(0,0,0,0.1));"></div>
+                <div class="absolute bottom-0 left-0 w-full h-0 z-10" style="border-left: 144px solid transparent; border-right: 144px solid transparent; border-bottom: 96px solid #ff708d;"></div>
+                <div class="absolute top-[80px] z-30 animate-shake origin-center">
+                    <div class="bg-white w-12 h-12 flex items-center justify-center pixel-border-sm rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-12 bg-white px-6 py-3 pixel-border text-[#4a4a4a] text-[10px] sm:text-sm animate-pulse">
+            Click to Open!
+        </div>
+    </div>
+
+    <!-- STAGE 2: THE LETTER -->
+    <div id="letter-stage" class="relative z-20 w-full max-w-md px-4 hidden-stage">
+        <div class="bg-[#fff5f7] p-2 pixel-border shadow-[8px_8px_0_0_rgba(74,74,74,0.2)]">
+            <div class="bg-[#ffc2d1] h-10 border-b-4 border-[#4a4a4a] flex justify-between items-center px-3 mb-2">
+                <span class="text-[#4a4a4a] text-[10px]">❤ Letter_For_You.exe</span>
+                <div class="flex gap-2">
+                    <div class="w-3 h-3 bg-white border-2 border-[#4a4a4a]"></div>
+                    <div class="w-3 h-3 bg-white border-2 border-[#4a4a4a]"></div>
+                </div>
+            </div>
+
+            <div class="letter-content">
+                <div class="absolute top-2 left-2 text-[#ffe0e6]">♥</div>
+                <div class="absolute top-2 right-2 text-[#ffe0e6]">♥</div>
+                <div class="absolute bottom-2 left-2 text-[#ffe0e6]">♥</div>
+                <div class="absolute bottom-2 right-2 text-[#ffe0e6]">♥</div>
+
+                <div id="question-area" class="flex flex-col items-center w-full">
+                    <div class="w-32 h-32 flex items-center justify-center text-7xl animate-heart-pulse mb-4">💞</div>
+                    <div class="text-center z-10">
+                        <h1 class="text-[#4a4a4a] text-[10px] sm:text-[12px] leading-relaxed mb-8 px-2">
+                            A- Aayan Bhaiya, will you be my valentine?
+                        </h1>
+                    </div>
+                    <div class="flex gap-4 w-full justify-center h-12 relative z-20">
+                        <button id="yes-button" class="px-6 bg-[#86efac] border-b-4 border-r-4 border-[#4a4a4a] text-[#4a4a4a] hover:translate-y-1 hover:translate-x-1 hover:border-b-0 hover:border-r-0 transition-all active:bg-[#4ade80]">YES</button>
+                        <button id="no-button" class="px-6 bg-[#fca5a5] border-b-4 border-r-4 border-[#4a4a4a] text-[#4a4a4a]">NO</button>
+                    </div>
+                </div>
+
+                <div id="success-area" class="hidden-stage flex flex-col items-center w-full">
+                    <div class="w-40 h-40 flex items-center justify-center text-8xl animate-bounce mb-4">💞</div>
+                    <h1 class="text-[#ff4d4d] text-xl mb-4 animate-bounce z-10 text-center">YIPPEEEE!!</h1>
+                    <p class="text-[#4a4a4a] text-[10px] text-center leading-relaxed max-w-[200px] z-10 mb-4">
+                        I knew you would say yes! <br> See you soon! &lt;3
+                    </p>
+                    <button onclick="location.reload()" class="mt-2 px-4 py-2 text-[10px] text-[#9ca3af] hover:text-[#4a4a4a] hover:underline z-10">(replay)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed bottom-4 text-[#ff8fa3] text-[10px] z-0">Made with ❤️</div>
+
+    <script>
+        const envelopeStage = document.getElementById('envelope-stage');
+        const letterStage = document.getElementById('letter-stage');
+        const questionArea = document.getElementById('question-area');
+        const successArea = document.getElementById('success-area');
+        const yesButton = document.getElementById('yes-button');
+        const noButton = document.getElementById('no-button');
+
+        let teleportCount = 0;
+        const MAX_TELEPORTS = 6;
+
+        envelopeStage.addEventListener('click', () => {
+            envelopeStage.classList.add('hidden-stage');
+            letterStage.classList.remove('hidden-stage');
+        });
+
+        yesButton.addEventListener('click', () => {
+            questionArea.classList.add('hidden-stage');
+            successArea.classList.remove('hidden-stage');
+            noButton.style.display = 'none';
+        });
+
+        function teleport() {
+            teleportCount++;
+            if (teleportCount >= MAX_TELEPORTS) {
+                noButton.style.display = 'none';
+                return;
+            }
+            const maxX = window.innerWidth - 120;
+            const maxY = window.innerHeight - 60;
+            const x = Math.max(10, Math.random() * maxX);
+            const y = Math.max(10, Math.random() * maxY);
+            noButton.style.position = 'fixed';
+            noButton.style.left = x + 'px';
+            noButton.style.top = y + 'px';
+            noButton.style.zIndex = '9999';
+        }
+
+        noButton.addEventListener('mouseenter', teleport);
+        noButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            teleport();
+        });
+    </script>
+</body>
+</html>
