@@ -2,205 +2,630 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Valentine Letter for Aayan Bhaiya</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SandVoxl</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        body {
-            font-family: 'Press Start 2P', cursive;
-            user-select: none;
-            -webkit-user-select: none;
-            background-color: #ffebf0;
-            overflow: hidden;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
+        body { margin: 0; overflow: hidden; background-color: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; touch-action: none; user-select: none; }
+        canvas { display: block; }
+        
+        #version-display {
+            position: fixed; top: 10px; right: 10px;
+            color: rgba(255, 255, 255, 0.6); font-size: 10px;
+            z-index: 300; pointer-events: none; text-align: right;
         }
 
-        .bg-pattern {
-            position: absolute;
-            inset: 0;
-            background-image: radial-gradient(#ffc2d1 2px, transparent 2px);
-            background-size: 32px 32px;
-            opacity: 0.6;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
+        .screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #4caf50; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 200;
         }
         
-        @keyframes shake {
-            0% { transform: rotate(0deg); }
-            25% { transform: rotate(5deg); }
-            50% { transform: rotate(0deg); }
-            75% { transform: rotate(-5deg); }
-            100% { transform: rotate(0deg); }
+        #settings-menu, #worlds-menu, #controls-setup, #info-screen, #texture-editor { display: none; }
+
+        #menu-title {
+            color: #fff; font-size: 42px; text-shadow: 3px 3px #000;
+            margin-bottom: 20px; text-align: center; letter-spacing: 2px;
         }
 
-        @keyframes pulse-heart {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
+        .menu-btn {
+            width: 280px; padding: 12px; margin: 8px;
+            background: #795548; border: 4px solid #3e2723;
+            color: #fff; font-family: 'monospace'; font-size: 18px;
+            font-weight: bold; cursor: pointer; text-align: center;
+            transition: transform 0.1s;
         }
+        .menu-btn:active { transform: scale(0.95); }
 
-        .animate-float { animation: float 3s ease-in-out infinite; }
-        .animate-shake { animation: shake 0.5s ease-in-out infinite; }
-        .animate-heart-pulse { animation: pulse-heart 1.5s ease-in-out infinite; }
-
-        .pixel-border {
-            box-shadow: 
-                -4px 0 0 0 #4a4a4a,
-                4px 0 0 0 #4a4a4a,
-                0 -4px 0 0 #4a4a4a,
-                0 4px 0 0 #4a4a4a;
-            margin: 4px; 
+        .world-slot {
+            width: 320px; background: #5d4037; border: 3px solid #3e2723;
+            margin: 5px; padding: 10px; display: flex; justify-content: space-between;
+            align-items: center; color: white; font-family: 'monospace';
         }
+        .world-name-btn { background: #795548; border: 2px solid #3e2723; color: white; padding: 5px 10px; cursor: pointer; flex-grow: 1; margin-right: 10px; text-align: left; }
+        .edit-name-btn { background: #ffb300; border: 2px solid #3e2723; padding: 5px; cursor: pointer; font-size: 12px; }
 
-        .pixel-border-sm {
-            box-shadow: 
-                -2px 0 0 0 #4a4a4a,
-                2px 0 0 0 #4a4a4a,
-                0 -2px 0 0 #4a4a4a,
-                0 2px 0 0 #4a4a4a;
+        #settings-menu { background: #4caf50; display: none; flex-direction: column; }
+        .settings-header {
+            height: 60px; width: 100%; background: rgba(0,0,0,0.2); border-bottom: 4px solid #3e2723;
+            display: flex; align-items: center; padding: 0 15px; box-sizing: border-box;
         }
+        .back-icon { 
+            font-size: 24px; cursor: pointer; margin-right: 20px; font-weight: bold; color: #fff;
+            background: #795548; width: 40px; height: 40px; display: flex; align-items: center; 
+            justify-content: center; border: 2px solid #3e2723;
+        }
+        .settings-title { flex-grow: 1; text-align: center; font-size: 24px; color: #fff; margin-right: 44px; text-shadow: 2px 2px #000; font-family: 'monospace'; font-weight: bold; }
+        
+        .settings-body { display: flex; flex: 1; width: 100%; overflow: hidden; }
+        .settings-sidebar { width: 140px; background: rgba(0,0,0,0.1); border-right: 2px solid #3e2723; padding-top: 10px; }
+        
+        .sidebar-item { 
+            padding: 15px; margin: 5px; cursor: pointer; 
+            font-size: 14px; color: #fff; transition: all 0.2s;
+            background: rgba(121, 85, 72, 0.4); border: 2px solid transparent;
+            font-family: 'monospace'; text-align: center;
+        }
+        .sidebar-item.active { background: #795548; border-color: #3e2723; font-weight: bold; box-shadow: 2px 2px 0px rgba(0,0,0,0.3); }
+        .settings-content { flex: 1; background: transparent; padding: 20px; overflow-y: auto; color: white; }
 
-        .hidden-stage {
-            display: none !important;
-        }
+        .experimental-badge { background: #d32f2f; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 5px; vertical-align: middle; }
 
-        #no-button {
-            transition: none;
-            white-space: nowrap;
-        }
+        /* Texture Editor Styles */
+        #texture-editor { background: #4caf50; z-index: 400; }
+        #paint-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; background: #3e2723; border: 4px solid #3e2723; margin: 20px; width: 240px; height: 240px; }
+        .pixel { width: 100%; height: 100%; background: #9c27b0; cursor: crosshair; }
+        .palette { display: flex; gap: 10px; margin-top: 20px; }
+        .color-swatch { width: 35px; height: 35px; border: 2px solid #fff; border-radius: 4px; cursor: pointer; }
+        .color-swatch.active { border-color: #ffeb3b; transform: scale(1.1); }
 
-        .letter-content {
-            border: 4px solid #ffc2d1;
-            background-color: white;
-            padding: 1.5rem;
-            min-height: 340px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
-        }
+        .warning-note { background: rgba(0,0,0,0.3); color: #ffeb3b; padding: 10px; border-radius: 5px; font-size: 14px; margin-top: 20px; text-align: center; }
+
+        #hotbar { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); display: none; gap: 5px; background: rgba(0,0,0,0.4); padding: 5px; border-radius: 4px; z-index: 150; }
+        .slot { width: 50px; height: 50px; border: 2px solid #555; background: rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-size: 9px; cursor: pointer; }
+        .slot.active { border-color: #fff; background: rgba(255,255,255,0.3); }
+        .slot-icon { width: 20px; height: 20px; margin-bottom: 2px; }
+
+        #pause-btn { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); width: 40px; height: 40px; background: rgba(0,0,0,0.5); border: 2px solid #fff; color: white; display: none; z-index: 300; align-items: center; justify-content: center; border-radius: 4px; }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 16px; height: 16px; transform: translate(-50%, -50%); pointer-events: none; display: none; }
+        #crosshair::before { content: ''; position: absolute; top: 0; left: 7px; width: 2px; height: 16px; background: #fff; }
+        #crosshair::after { content: ''; position: absolute; top: 7px; left: 0; width: 16px; height: 2px; background: #fff; }
+        #debug-info { position: absolute; top: 10px; left: 10px; color: white; background: rgba(0,0,0,0.4); padding: 5px; font-size: 10px; display: none; pointer-events: none; }
+
+        #dpad-ui { position: fixed; bottom: 30px; left: 30px; display: none; grid-template-areas: ". up ." "left . right" ". down ."; gap: 5px; z-index: 150; }
+        .dpad-btn { width: 50px; height: 50px; background: rgba(0,0,0,0.2); border: 2px solid #fff; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 4px; }
+        #interaction-controls { position: fixed; bottom: 30px; right: 30px; display: none; flex-direction: column; align-items: flex-end; gap: 10px; z-index: 150; }
+        .action-btn { width: 60px; height: 60px; background: rgba(0,0,0,0.3); border: 2px solid #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="bg-pattern"></div>
+    <div id="version-display">SandVoxl v0.2 (Indev 5)</div>
 
-    <!-- STAGE 1: ENVELOPE -->
-    <div id="envelope-stage" class="relative z-10 flex flex-col items-center cursor-pointer group">
-        <div class="relative animate-float transition-transform group-hover:scale-105 duration-300">
-            <div class="w-72 h-48 bg-[#ff5e78] relative pixel-border flex items-center justify-center shadow-lg">
-                <div class="absolute top-0 left-0 w-full h-0 z-20" style="border-left: 144px solid transparent; border-right: 144px solid transparent; border-top: 100px solid #ff8fa3; filter: drop-shadow(0 4px 0 rgba(0,0,0,0.1));"></div>
-                <div class="absolute bottom-0 left-0 w-full h-0 z-10" style="border-left: 144px solid transparent; border-right: 144px solid transparent; border-bottom: 96px solid #ff708d;"></div>
-                <div class="absolute top-[80px] z-30 animate-shake origin-center">
-                    <div class="bg-white w-12 h-12 flex items-center justify-center pixel-border-sm rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                    </div>
-                </div>
-            </div>
+    <!-- MAIN MENU -->
+    <div id="main-menu" class="screen">
+        <div id="menu-title">SandVoxl</div>
+        <button class="menu-btn" onclick="showWorlds()">PLAY</button>
+        <button class="menu-btn" onclick="toggleScreen('settings-menu', true)">SETTINGS</button>
+        <div class="warning-note">Note: Game is not fully Stable</div>
+    </div>
+
+    <!-- WORLDS MENU -->
+    <div id="worlds-menu" class="screen">
+        <h2 style="color: white; text-shadow: 2px 2px #000;">Select World Slot</h2>
+        <div id="worlds-list" style="width: 340px; max-height: 400px; overflow-y: auto; margin-bottom: 10px;"></div>
+        <button class="menu-btn" onclick="goBackToMain()">BACK</button>
+    </div>
+
+    <!-- INITIAL CONTROL SETUP -->
+    <div id="controls-setup" class="screen">
+        <h2 style="color: white; text-align: center; text-shadow: 2px 2px #000;">Select Your Device</h2>
+        <button class="menu-btn" onclick="setControlType('pc')">PC (Keyboard/Mouse)</button>
+        <button class="menu-btn" onclick="setControlType('joystick')">Mobile (Joystick)</button>
+        <button class="menu-btn" onclick="setControlType('dpad')">Mobile (D-Pad)</button>
+    </div>
+
+    <!-- PC CONTROLS INFO -->
+    <div id="info-screen" class="screen">
+        <h2 style="color: white; text-shadow: 2px 2px #000;">PC CONTROLS</h2>
+        <div style="background: rgba(0,0,0,0.4); color: white; padding: 20px; border-radius: 8px; text-align: left; width: 280px; font-family: monospace;">
+            W - Forward | A - Left<br>
+            S - Backward | D - Right<br>
+            Q - Break | E - Place<br>
+            Space - Jump<br>
+            1-5 - Select Bricks
         </div>
-        <div class="mt-12 bg-white px-6 py-3 pixel-border text-[#4a4a4a] text-[10px] sm:text-sm animate-pulse">
-            Click to Open!
+        <button class="menu-btn" style="margin-top: 20px;" onclick="toggleScreen('info-screen', false); startGameActual();">START GAME</button>
+    </div>
+
+    <!-- SETTINGS MENU -->
+    <div id="settings-menu" class="screen">
+        <div class="settings-header">
+            <div class="back-icon" onclick="toggleScreen('settings-menu', false)"> &lt; </div>
+            <div class="settings-title">SETTINGS</div>
+        </div>
+        <div class="settings-body">
+            <div class="settings-sidebar">
+                <div class="sidebar-item active" id="tab-controls" onclick="setSettingsTab('controls')">CONTROLS</div>
+                <div class="sidebar-item" id="tab-blocks" onclick="setSettingsTab('blocks')">BLOCKS</div>
+                <div class="sidebar-item" id="tab-credits" onclick="setSettingsTab('credits')">CREDITS</div>
+            </div>
+            <div class="settings-content" id="settings-content"></div>
         </div>
     </div>
 
-    <!-- STAGE 2: THE LETTER -->
-    <div id="letter-stage" class="relative z-20 w-full max-w-md px-4 hidden-stage">
-        <div class="bg-[#fff5f7] p-2 pixel-border shadow-[8px_8px_0_0_rgba(74,74,74,0.2)]">
-            <div class="bg-[#ffc2d1] h-10 border-b-4 border-[#4a4a4a] flex justify-between items-center px-3 mb-2">
-                <span class="text-[#4a4a4a] text-[10px]">❤ Letter_For_You.exe</span>
-                <div class="flex gap-2">
-                    <div class="w-3 h-3 bg-white border-2 border-[#4a4a4a]"></div>
-                    <div class="w-3 h-3 bg-white border-2 border-[#4a4a4a]"></div>
-                </div>
-            </div>
-
-            <div class="letter-content">
-                <div class="absolute top-2 left-2 text-[#ffe0e6]">♥</div>
-                <div class="absolute top-2 right-2 text-[#ffe0e6]">♥</div>
-                <div class="absolute bottom-2 left-2 text-[#ffe0e6]">♥</div>
-                <div class="absolute bottom-2 right-2 text-[#ffe0e6]">♥</div>
-
-                <div id="question-area" class="flex flex-col items-center w-full">
-                    <div class="w-32 h-32 flex items-center justify-center text-7xl animate-heart-pulse mb-4">💞</div>
-                    <div class="text-center z-10">
-                        <h1 class="text-[#4a4a4a] text-[10px] sm:text-[12px] leading-relaxed mb-8 px-2">
-                            A- Aayan Bhaiya, will you be my valentine?
-                        </h1>
-                    </div>
-                    <div class="flex gap-4 w-full justify-center h-12 relative z-20">
-                        <button id="yes-button" class="px-6 bg-[#86efac] border-b-4 border-r-4 border-[#4a4a4a] text-[#4a4a4a] hover:translate-y-1 hover:translate-x-1 hover:border-b-0 hover:border-r-0 transition-all active:bg-[#4ade80]">YES</button>
-                        <button id="no-button" class="px-6 bg-[#fca5a5] border-b-4 border-r-4 border-[#4a4a4a] text-[#4a4a4a]">NO</button>
-                    </div>
-                </div>
-
-                <div id="success-area" class="hidden-stage flex flex-col items-center w-full">
-                    <div class="w-40 h-40 flex items-center justify-center text-8xl animate-bounce mb-4">💞</div>
-                    <h1 class="text-[#ff4d4d] text-xl mb-4 animate-bounce z-10 text-center">YIPPEEEE!!</h1>
-                    <p class="text-[#4a4a4a] text-[10px] text-center leading-relaxed max-w-[200px] z-10 mb-4">
-                        I knew you would say yes! <br> See you soon! &lt;3
-                    </p>
-                    <button onclick="location.reload()" class="mt-2 px-4 py-2 text-[10px] text-[#9ca3af] hover:text-[#4a4a4a] hover:underline z-10">(replay)</button>
-                </div>
-            </div>
+    <!-- TEXTURE EDITOR OVERLAY -->
+    <div id="texture-editor" class="screen">
+        <h2 style="color: white; text-shadow: 2px 2px #000;">TEXTURE EDITOR</h2>
+        <div id="paint-grid"></div>
+        <div class="palette" id="editor-palette"></div>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="menu-btn" style="width:135px;" onclick="saveTexture()">SAVE</button>
+            <button class="menu-btn" style="width:135px; background:#d32f2f; border-color:#b71c1c;" onclick="toggleScreen('texture-editor', false)">CANCEL</button>
         </div>
     </div>
 
-    <div class="fixed bottom-4 text-[#ff8fa3] text-[10px] z-0">Made with ❤️</div>
+    <!-- GAME UI -->
+    <div id="pause-btn" onclick="pauseGame()">||</div>
+    <div id="debug-info">XYZ: <span id="pos-xyz">0/0/0</span> | Chunks: <span id="chunk-count">0</span></div>
+    <div id="crosshair"></div>
+    <div id="hotbar">
+        <div class="slot active" onclick="selectSlot(0)"><div class="slot-icon" style="background:#2196f3"></div><span>Blue</span></div>
+        <div class="slot" onclick="selectSlot(1)"><div class="slot-icon" style="background:#e53935"></div><span>Red</span></div>
+        <div class="slot" onclick="selectSlot(2)"><div class="slot-icon" style="background:#43a047"></div><span>Green</span></div>
+        <div class="slot" onclick="selectSlot(3)"><div class="slot-icon" style="background:#ffb300"></div><span>Yellow</span></div>
+        <div class="slot" onclick="selectSlot(4)"><div class="slot-icon" id="custom-slot-icon" style="background:#9c27b0"></div><span>Custom</span></div>
+    </div>
+
+    <div id="mobile-joystick" style="position:fixed; bottom:30px; left:30px; display:none;">
+        <div id="joystick-ui" style="width:120px; height:120px; border:2px solid #fff; border-radius:50%; position:relative;">
+            <div id="joystick-handle" style="width:40px; height:40px; background:#fff; border-radius:50%; position:absolute; top:40px; left:40px;"></div>
+        </div>
+    </div>
+
+    <div id="dpad-ui">
+        <div class="dpad-btn" style="grid-area: up;" id="dpad-up">▲</div>
+        <div class="dpad-btn" style="grid-area: left;" id="dpad-left">◀</div>
+        <div class="dpad-btn" style="grid-area: right;" id="dpad-right">▶</div>
+        <div class="dpad-btn" style="grid-area: down;" id="dpad-down">▼</div>
+    </div>
+
+    <div id="interaction-controls">
+        <div style="display:flex; gap:10px;">
+            <div class="action-btn" id="break-btn">BRK</div>
+            <div class="action-btn" id="place-btn">PLC</div>
+        </div>
+        <div class="action-btn" id="jump-btn" style="width:130px; border-radius:30px;">JUMP</div>
+    </div>
 
     <script>
-        const envelopeStage = document.getElementById('envelope-stage');
-        const letterStage = document.getElementById('letter-stage');
-        const questionArea = document.getElementById('question-area');
-        const successArea = document.getElementById('success-area');
-        const yesButton = document.getElementById('yes-button');
-        const noButton = document.getElementById('no-button');
+        const CHUNK_SIZE = 16;
+        const RENDER_DISTANCE = 3;
+        const PLAYER_HEIGHT = 1.8;
 
-        let teleportCount = 0;
-        const MAX_TELEPORTS = 6;
+        let scene, camera, renderer, clock;
+        let activeWorldData = new Map();
+        let renderedChunks = new Map();
+        
+        // 5 Fresh Worlds System
+        let worlds = [
+            { id: 0, name: "World 1", data: new Map() },
+            { id: 1, name: "World 2", data: new Map() },
+            { id: 2, name: "World 3", data: new Map() },
+            { id: 3, name: "World 4", data: new Map() },
+            { id: 4, name: "World 5", data: new Map() }
+        ];
 
-        envelopeStage.addEventListener('click', () => {
-            envelopeStage.classList.add('hidden-stage');
-            letterStage.classList.remove('hidden-stage');
-        });
+        let isLocked = false, canJump = false, controlType = 'pc';
+        const keys = {};
+        const velocity = new THREE.Vector3();
+        let yaw = 0, pitch = 0;
+        let moveTouchId = null, lookTouchId = null;
+        let joystickVector = new THREE.Vector2(0,0);
+        let dpadActive = { up: false, down: false, left: false, right: false };
+        let selectedSlot = 0;
 
-        yesButton.addEventListener('click', () => {
-            questionArea.classList.add('hidden-stage');
-            successArea.classList.remove('hidden-stage');
-            noButton.style.display = 'none';
-        });
+        // Texture State
+        let customColors = Array(64).fill('#9c27b0');
+        let selectedPaintColor = '#9c27b0';
+        const gamePalette = ['#2196f3', '#e53935', '#43a047', '#ffb300', '#9c27b0', '#ffffff', '#000000'];
 
-        function teleport() {
-            teleportCount++;
-            if (teleportCount >= MAX_TELEPORTS) {
-                noButton.style.display = 'none';
-                return;
-            }
-            const maxX = window.innerWidth - 120;
-            const maxY = window.innerHeight - 60;
-            const x = Math.max(10, Math.random() * maxX);
-            const y = Math.max(10, Math.random() * maxY);
-            noButton.style.position = 'fixed';
-            noButton.style.left = x + 'px';
-            noButton.style.top = y + 'px';
-            noButton.style.zIndex = '9999';
+        function showWorlds() {
+            const list = document.getElementById('worlds-list');
+            list.innerHTML = '';
+            worlds.forEach((w) => {
+                const slot = document.createElement('div');
+                slot.className = 'world-slot';
+                
+                const btn = document.createElement('button');
+                btn.className = 'world-name-btn';
+                btn.innerText = w.name;
+                btn.onclick = () => {
+                    activeWorldData = w.data;
+                    toggleScreen('worlds-menu', false);
+                    toggleScreen('controls-setup', true);
+                };
+
+                const edit = document.createElement('button');
+                edit.className = 'edit-name-btn';
+                edit.innerText = "RENAME";
+                edit.onclick = (e) => {
+                    e.stopPropagation();
+                    const newName = prompt("Enter new name for " + w.name + ":", w.name);
+                    if(newName) {
+                        w.name = newName;
+                        showWorlds();
+                    }
+                };
+
+                slot.appendChild(btn);
+                slot.appendChild(edit);
+                list.appendChild(slot);
+            });
+            toggleScreen('main-menu', false);
+            toggleScreen('worlds-menu', true);
         }
 
-        noButton.addEventListener('mouseenter', teleport);
-        noButton.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            teleport();
-        });
+        function setControlType(type) {
+            controlType = type;
+            toggleScreen('controls-setup', false);
+            if(type === 'pc') toggleScreen('info-screen', true);
+            else startGameActual();
+        }
+
+        function setSettingsTab(tab) {
+            const content = document.getElementById('settings-content');
+            document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+
+            if(tab === 'controls') {
+                content.innerHTML = `
+                    <div class="control-option ${controlType==='pc'?'selected':''}" onclick="changeInput('pc')">
+                        <div class="control-icon">| A |</div>
+                        <div>KEYBOARD & MOUSE</div>
+                    </div>
+                    <div class="control-option ${controlType==='joystick'?'selected':''}" onclick="changeInput('joystick')">
+                        <div class="control-icon"><div style="width:15px;height:15px;border-radius:50%;border:2px solid #fff"></div></div>
+                        <div>MOBILE JOYSTICK</div>
+                    </div>
+                    <div class="control-option ${controlType==='dpad'?'selected':''}" onclick="changeInput('dpad')">
+                        <div class="control-icon">▲<br>◀ ▶</div>
+                        <div>MOBILE D-PAD</div>
+                    </div>
+                `;
+            } else if (tab === 'blocks') {
+                content.innerHTML = `
+                    <h3 style="text-shadow: 2px 2px #000;">BLOCK EDITOR <span class="experimental-badge">EXPERIMENTAL</span></h3>
+                    <div style="background: rgba(211, 47, 47, 0.2); border: 1px solid #d32f2f; padding: 8px; font-size: 11px; margin-bottom: 15px; color: #ffcdd2;">
+                        <strong>EXPERIMENTAL NOTE:</strong> The custom block system is in early testing. Performance may drop when rendering many custom textures. Changes apply to all "Custom" bricks in the world.
+                    </div>
+                    <p style="font-size: 14px;">Modify the properties of the custom purple block.</p>
+                    <div id="custom-preview" style="width:60px; height:60px; background:#9c27b0; border:4px solid #3e2723; margin: 10px 0;"></div>
+                    <button class="menu-btn" style="width: 200px; font-size: 14px;" onclick="openTextureEditor()">EDIT TEXTURE</button>
+                `;
+                updateCustomPreview();
+            } else if (tab === 'credits') {
+                content.innerHTML = `
+                    <h3 style="text-shadow: 2px 2px #000;">CREDITS</h3>
+                    <p>Programmer: <strong>MAR_</strong></p>
+                    <p>Asset Designer: <strong>OmarAshr256</strong></p>
+                    <p style="margin-top:20px; font-size: 12px; color: #ffeb3b;">SandVoxl Engine v0.2</p>
+                `;
+            }
+        }
+
+        function updateCustomPreview() {
+            const preview = document.getElementById('custom-preview');
+            if (preview) {
+                preview.style.background = `conic-gradient(${customColors.join(',')})`;
+                preview.style.backgroundColor = customColors[0];
+            }
+        }
+
+        function openTextureEditor() {
+            toggleScreen('texture-editor', true);
+            const grid = document.getElementById('paint-grid');
+            grid.innerHTML = '';
+            customColors.forEach((color, i) => {
+                const pixel = document.createElement('div');
+                pixel.className = 'pixel';
+                pixel.style.backgroundColor = color;
+                pixel.onclick = () => {
+                    pixel.style.backgroundColor = selectedPaintColor;
+                    customColors[i] = selectedPaintColor;
+                };
+                grid.appendChild(pixel);
+            });
+
+            const palette = document.getElementById('editor-palette');
+            palette.innerHTML = '';
+            gamePalette.forEach(color => {
+                const swatch = document.createElement('div');
+                swatch.className = 'color-swatch' + (color === selectedPaintColor ? ' active' : '');
+                swatch.style.backgroundColor = color;
+                swatch.onclick = () => {
+                    selectedPaintColor = color;
+                    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+                    swatch.classList.add('active');
+                };
+                palette.appendChild(swatch);
+            });
+        }
+
+        function saveTexture() {
+            if(renderedChunks.size > 0) {
+                renderedChunks.forEach((g, k) => {
+                    scene.remove(g);
+                    renderedChunks.delete(k);
+                    renderChunk(k);
+                });
+            }
+            document.getElementById('custom-slot-icon').style.backgroundColor = customColors[0];
+            toggleScreen('texture-editor', false);
+            setSettingsTab('blocks');
+        }
+
+        function changeInput(type) {
+            controlType = type;
+            setSettingsTab('controls');
+            if(isLocked) applyInputUI();
+        }
+
+        function applyInputUI() {
+            document.getElementById('mobile-joystick').style.display = 'none';
+            document.getElementById('dpad-ui').style.display = 'none';
+            document.getElementById('interaction-controls').style.display = 'none';
+            if(controlType !== 'pc') {
+                document.getElementById('interaction-controls').style.display = 'flex';
+                if(controlType === 'joystick') document.getElementById('mobile-joystick').style.display = 'block';
+                if(controlType === 'dpad') document.getElementById('dpad-ui').style.display = 'grid';
+            }
+        }
+
+        function startGameActual() {
+            if (!scene) initEngine();
+            document.getElementById('pause-btn').style.display = 'flex';
+            document.getElementById('hotbar').style.display = 'flex';
+            document.getElementById('crosshair').style.display = 'block';
+            document.getElementById('debug-info').style.display = 'block';
+            camera.position.set(0, 3, 0);
+            velocity.set(0,0,0);
+            applyInputUI();
+            if (controlType === 'pc') renderer.domElement.requestPointerLock();
+            isLocked = true;
+            updateChunks(true);
+        }
+
+        function pauseGame() {
+            isLocked = false;
+            if (document.pointerLockElement) document.exitPointerLock();
+            document.getElementById('pause-btn').style.display = 'none';
+            document.getElementById('mobile-joystick').style.display = 'none';
+            document.getElementById('dpad-ui').style.display = 'none';
+            document.getElementById('interaction-controls').style.display = 'none';
+            toggleScreen('main-menu', true);
+        }
+
+        function initEngine() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+            scene.fog = new THREE.Fog(0x87CEEB, 20, 60);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.rotation.order = 'YXZ';
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+            const sun = new THREE.DirectionalLight(0xffffff, 0.6);
+            sun.position.set(10, 50, 10);
+            scene.add(sun);
+            clock = new THREE.Clock();
+            window.addEventListener('keydown', (e) => {
+                keys[e.code] = true;
+                if (e.code === 'KeyQ') performRaycast(true);
+                if (e.code === 'KeyE') performRaycast(false);
+                if (e.code.startsWith('Digit')) {
+                    const idx = parseInt(e.key) - 1;
+                    if(idx >= 0 && idx <= 4) selectSlot(idx);
+                }
+            });
+            window.addEventListener('keyup', (e) => keys[e.code] = false);
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            document.addEventListener('pointerlockchange', () => {
+                if(controlType === 'pc') isLocked = document.pointerLockElement === renderer.domElement;
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (isLocked && controlType === 'pc') {
+                    yaw -= e.movementX * 0.002;
+                    pitch -= e.movementY * 0.002;
+                    pitch = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, pitch));
+                }
+            });
+            setupTouchEvents();
+            animate();
+        }
+
+        function setupTouchEvents() {
+            const handle = document.getElementById('joystick-handle');
+            document.addEventListener('touchstart', (e) => {
+                for (let t of e.changedTouches) {
+                    if (t.clientX < window.innerWidth / 2) {
+                        if (controlType === 'joystick' && moveTouchId === null) { moveTouchId = t.identifier; updateJoystick(t); }
+                    } else {
+                        if (lookTouchId === null && !e.target.closest('.action-btn') && !e.target.closest('.dpad-btn')) {
+                            lookTouchId = t.identifier; lastLookX = t.clientX; lastLookY = t.clientY;
+                        }
+                    }
+                }
+            });
+            document.addEventListener('touchmove', (e) => {
+                for (let t of e.changedTouches) {
+                    if (t.identifier === moveTouchId && controlType === 'joystick') updateJoystick(t);
+                    if (t.identifier === lookTouchId) {
+                        yaw -= (t.clientX - lastLookX) * 0.006;
+                        pitch -= (t.clientY - lastLookY) * 0.006;
+                        pitch = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, pitch));
+                        lastLookX = t.clientX; lastLookY = t.clientY;
+                    }
+                }
+            });
+            document.addEventListener('touchend', (e) => {
+                for (let t of e.changedTouches) {
+                    if (t.identifier === moveTouchId) { moveTouchId = null; handle.style.transform = ''; joystickVector.set(0,0); }
+                    if (t.identifier === lookTouchId) lookTouchId = null;
+                }
+            });
+            function updateJoystick(t) {
+                const rect = document.getElementById('joystick-ui').getBoundingClientRect();
+                let dx = t.clientX - (rect.left + 60);
+                let dy = t.clientY - (rect.top + 60);
+                const d = Math.sqrt(dx*dx+dy*dy);
+                if(d > 40) { dx *= 40/d; dy *= 40/d; }
+                handle.style.transform = `translate(${dx}px, ${dy}px)`;
+                joystickVector.set(dx/40, dy/40);
+            }
+            ['up','down','left','right'].forEach(dir => {
+                const el = document.getElementById('dpad-'+dir);
+                el.addEventListener('touchstart', (e) => { e.preventDefault(); dpadActive[dir] = true; });
+                el.addEventListener('touchend', () => dpadActive[dir] = false);
+            });
+            document.getElementById('break-btn').addEventListener('touchstart', (e) => { e.preventDefault(); performRaycast(true); });
+            document.getElementById('place-btn').addEventListener('touchstart', (e) => { e.preventDefault(); performRaycast(false); });
+            document.getElementById('jump-btn').addEventListener('touchstart', (e) => { e.preventDefault(); if(canJump) velocity.y = 8.5; });
+        }
+
+        function performRaycast(isBreaking) {
+            const r = new THREE.Raycaster();
+            r.setFromCamera(new THREE.Vector2(0,0), camera);
+            r.far = 10;
+            const targets = [];
+            renderedChunks.forEach(c => c.children.forEach(m => { if(m.userData.isRaycastTarget) targets.push(m); }));
+            const hits = r.intersectObjects(targets);
+            if(hits.length > 0) {
+                const h = hits[0];
+                const m = new THREE.Matrix4();
+                h.object.getMatrixAt(h.instanceId, m);
+                const p = new THREE.Vector3().setFromMatrixPosition(m);
+                if(isBreaking) {
+                    activeWorldData.set(`${Math.round(p.x)},${Math.round(p.y)},${Math.round(p.z)}`, 0);
+                    refreshChunks(p);
+                } else {
+                    const np = p.clone().add(h.face.normal);
+                    activeWorldData.set(`${Math.round(np.x)},${Math.round(np.y)},${Math.round(np.z)}`, [2,3,4,5,6][selectedSlot]);
+                    refreshChunks(np);
+                }
+            }
+        }
+
+        function refreshChunks(p) {
+            const cx = Math.floor(p.x / CHUNK_SIZE), cz = Math.floor(p.z / CHUNK_SIZE);
+            const k = `${cx},${cz}`;
+            if(renderedChunks.has(k)) { scene.remove(renderedChunks.get(k)); renderedChunks.delete(k); renderChunk(k); }
+        }
+
+        function renderChunk(key) {
+            const [cx, cz] = key.split(',').map(Number);
+            const group = new THREE.Group();
+            const startX = cx * CHUNK_SIZE, startZ = cz * CHUNK_SIZE;
+            const types = [{id:1, c:'#4caf50'}, {id:2, c:'#2196f3'}, {id:3, c:'#e53935'}, {id:4, c:'#43a047'}, {id:5, c:'#ffb300'}, {id:6, c:'#9c27b0'}];
+            const bodyGeo = new THREE.BoxGeometry(1,1,1);
+            const studGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.12, 10);
+            const dummy = new THREE.Object3D();
+            
+            types.forEach(t => {
+                const list = [];
+                for(let x=0; x<CHUNK_SIZE; x++) for(let z=0; z<CHUNK_SIZE; z++) {
+                    const gx = startX+x, gz = startZ+z;
+                    if(t.id === 1 && !activeWorldData.has(`${gx},0,${gz}`)) list.push([gx,0,gz]);
+                }
+                activeWorldData.forEach((v,k) => {
+                    const [bx,by,bz] = k.split(',').map(Number);
+                    if(v === t.id && Math.floor(bx/CHUNK_SIZE) === cx && Math.floor(bz/CHUNK_SIZE) === cz && (by !== 0 || t.id !== 1)) list.push([bx,by,bz]);
+                });
+                
+                if(list.length > 0) {
+                    let color = t.c;
+                    if(t.id === 6) color = customColors[0];
+                    const mat = new THREE.MeshLambertMaterial({color: color});
+                    const bodies = new THREE.InstancedMesh(bodyGeo, mat, list.length);
+                    const studs = new THREE.InstancedMesh(studGeo, mat, list.length * 4);
+                    list.forEach((p, i) => {
+                        dummy.position.set(p[0],p[1],p[2]); dummy.updateMatrix(); bodies.setMatrixAt(i, dummy.matrix);
+                        const off = 0.22;
+                        const sOffs = [[off,off],[off,-off],[-off,off],[-off,-off]];
+                        sOffs.forEach((o, si) => {
+                            dummy.position.set(p[0]+o[0], p[1]+0.56, p[2]+o[1]); dummy.updateMatrix();
+                            studs.setMatrixAt(i*4+si, dummy.matrix);
+                        });
+                    });
+                    group.add(bodies); group.add(studs); bodies.userData.isRaycastTarget = true;
+                }
+            });
+            scene.add(group); renderedChunks.set(key, group);
+        }
+
+        function updateChunks() {
+            const cx = Math.floor(camera.position.x/CHUNK_SIZE), cz = Math.floor(camera.position.z/CHUNK_SIZE);
+            const needed = new Set();
+            for(let x=-RENDER_DISTANCE; x<=RENDER_DISTANCE; x++) for(let z=-RENDER_DISTANCE; z<=RENDER_DISTANCE; z++) needed.add(`${cx+x},${cz+z}`);
+            renderedChunks.forEach((g,k) => { if(!needed.has(k)) { scene.remove(g); renderedChunks.delete(k); } });
+            needed.forEach(k => { if(!renderedChunks.has(k)) renderChunk(k); });
+            document.getElementById('chunk-count').innerText = renderedChunks.size;
+        }
+
+        function checkCollision(p) {
+            const bx = Math.round(p.x), bz = Math.round(p.z), by = Math.round(p.y - PLAYER_HEIGHT);
+            const isSolid = (x,y,z) => activeWorldData.get(`${x},${y},${z}`) > 0 || y <= 0;
+            return isSolid(bx, by, bz) || isSolid(bx, Math.round(p.y-0.2), bz);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if(!clock) return;
+            const delta = Math.min(clock.getDelta(), 0.1);
+            if(isLocked) {
+                camera.rotation.x = pitch; camera.rotation.y = yaw;
+                velocity.y -= 22 * delta;
+                const move = new THREE.Vector3();
+                const fwd = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)).negate();
+                const side = new THREE.Vector3().crossVectors(new THREE.Vector3(0,1,0), fwd).normalize();
+                if(controlType === 'joystick') { move.addScaledVector(fwd, -joystickVector.y); move.addScaledVector(side, -joystickVector.x); }
+                else if(controlType === 'dpad') {
+                    if(dpadActive.up) move.add(fwd); if(dpadActive.down) move.add(fwd.clone().negate());
+                    if(dpadActive.left) move.add(side); if(dpadActive.right) move.add(side.clone().negate());
+                } else {
+                    if(keys['KeyW']) move.add(fwd); if(keys['KeyS']) move.add(fwd.clone().negate());
+                    if(keys['KeyA']) move.add(side); if(keys['KeyD']) move.add(side.clone().negate());
+                }
+                if(move.length() > 0) {
+                    move.normalize().multiplyScalar(8 * delta);
+                    const nx = camera.position.clone(); nx.x += move.x; if(!checkCollision(nx)) camera.position.x += move.x;
+                    const nz = camera.position.clone(); nz.z += move.z; if(!checkCollision(nz)) camera.position.z += move.z;
+                }
+                camera.position.y += velocity.y * delta;
+                if(checkCollision(camera.position)) {
+                    if(velocity.y < 0) { canJump = true; camera.position.y = Math.floor(camera.position.y - PLAYER_HEIGHT + 0.5) + PLAYER_HEIGHT + 0.51; }
+                    velocity.y = 0;
+                } else canJump = false;
+                if(keys['Space'] && canJump) { velocity.y = 8.5; canJump = false; }
+                if(camera.position.y < -5) camera.position.set(0,3,0);
+                updateChunks();
+            }
+            document.getElementById('pos-xyz').innerText = `${camera.position.x.toFixed(1)}, ${camera.position.y.toFixed(1)}, ${camera.position.z.toFixed(1)}`;
+            renderer.render(scene, camera);
+        }
+
+        function toggleScreen(id, s) { 
+            document.getElementById(id).style.display = s ? 'flex' : 'none'; 
+            if(id === 'settings-menu' && s) setSettingsTab('controls');
+        }
+        function goBackToMain() { toggleScreen('worlds-menu', false); toggleScreen('main-menu', true); }
+        function selectSlot(i) { selectedSlot = i; document.querySelectorAll('.slot').forEach((s,idx) => s.classList.toggle('active', idx===i)); }
     </script>
 </body>
 </html>
